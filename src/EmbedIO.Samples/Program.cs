@@ -21,6 +21,9 @@ namespace EmbedIO.Samples
         {
             var url = args.Length > 0 ? args[0] : "http://*:8877";
 
+            Definitions.SuppressStaticConstructors = true;
+            Logger.RegisterLogger<DeadSimpleLogger>();
+
             using (var ctSource = new CancellationTokenSource())
             {
                 Task.WaitAll(
@@ -31,7 +34,6 @@ namespace EmbedIO.Samples
 
             // Clean up
             "Bye".Info(nameof(Program));
-            Terminal.Flush();
 
             Console.WriteLine("Press any key to exit.");
             WaitForKeypress();
@@ -130,6 +132,19 @@ namespace EmbedIO.Samples
                 Console.ReadKey(true);
 
             Console.ReadKey(true);
+        }
+
+        private class DeadSimpleLogger : Swan.Logging.TextLogger, Swan.Logging.ILogger
+        {
+            public LogLevel LogLevel { get; set; } = LogLevel.Debug;
+
+            public void Dispose() { }
+
+            public void Log(LogMessageReceivedEventArgs logEvent)
+            {
+                (string msg, ConsoleColor _) = this.GetOutputAndColor(logEvent);
+                Console.WriteLine(msg);
+            }
         }
     }
 }
